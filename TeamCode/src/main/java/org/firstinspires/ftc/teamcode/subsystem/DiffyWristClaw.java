@@ -9,8 +9,8 @@ public class DiffyWristClaw {
 
     private final Servo leftServo;
     private final Servo rightServo;
-    private ServoImplEx leftServoEx;
-    private ServoImplEx rightServoEx;
+    private final ServoImplEx leftServoEx;
+    private final ServoImplEx rightServoEx;
 
     // Adjust these names to match your robot's configuration
     private static final String SERVO_LEFT = "wristServoLeft";
