@@ -1,12 +1,16 @@
 package org.firstinspires.ftc.teamcode.subsystem;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 public class DiffyWristClaw {
 
     private final Servo leftServo;
     private final Servo rightServo;
+    private ServoImplEx leftServoEx;
+    private ServoImplEx rightServoEx;
 
     // Adjust these names to match your robot's configuration
     private static final String SERVO_LEFT = "wristServoLeft";
@@ -20,6 +24,11 @@ public class DiffyWristClaw {
     public DiffyWristClaw(HardwareMap hardwareMap) {
         leftServo = hardwareMap.get(Servo.class, SERVO_LEFT);
         rightServo = hardwareMap.get(Servo.class, SERVO_RIGHT);
+        leftServoEx = (ServoImplEx) leftServo;
+        rightServoEx = (ServoImplEx) rightServo;
+
+        leftServoEx.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        rightServoEx.setPwmRange(new PwmControl.PwmRange(500, 2500));
 
         // Optional: Set initial servo directions if needed.
         // By default, they are Servo.Direction.FORWARD
@@ -50,18 +59,14 @@ public class DiffyWristClaw {
         angle = Math.max(0.0, Math.min(1.0, angle));
         tilt = Math.max(0.0, Math.min(1.0, tilt));
 
+        // Map desiredTilt (0-1, 0.5 is neutral) to differentialTilt (-0.5 to 0.5, 0 is neutral)
+        tilt -= 0.5;
+
         // Calculate servo positions for differential movement
         // These formulas are common for differential mechanisms.
         // You might need to adjust or swap them based on your specific setup.
         double servo1Position = angle + tilt;
         double servo2Position = angle - tilt;
-
-        // Normalize the positions to be within [0.0, 1.0]
-        // This scaling ensures that the combined movements don't exceed servo limits.
-        // It effectively halves the range of each individual input (angle/tilt)
-        // when combined.
-        servo1Position = (servo1Position * 0.75);
-        servo2Position = (servo2Position * 0.75);
 
         // It's also common to see another approach where one servo might be reversed
         // and the tilt is added/subtracted differently. For example:
@@ -75,8 +80,8 @@ public class DiffyWristClaw {
         servo2Position = Math.max(0.0, Math.min(1.0, servo2Position));
 
 
-        leftServo.setPosition(servo1Position);
-        rightServo.setPosition(servo2Position);
+        leftServoEx.setPosition(servo1Position);
+        rightServoEx.setPosition(servo2Position);
     }
 
     /**
@@ -93,6 +98,14 @@ public class DiffyWristClaw {
      */
     public void setNeutralTiltWithAngle(double angle) {
         setWristPosition(angle, 0.5); // 0.5 for tilt might be a neutral or flat position
+    }
+
+    /**
+     * Sets the wrist to a "neutral" or "centered" position.
+     */
+    public void setNeutralComplete() {
+        leftServoEx.setPosition(0.5);
+        rightServoEx.setPosition(0.5);
     }
 
     /**
